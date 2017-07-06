@@ -2,6 +2,13 @@
 
 I use this github project to store an version my bash scripts
 
+## add scripts to your bash
+add the following line into your .bash_profile or .bashrc
+
+```
+test -f ~/.profile && . ~/.profile
+```
+
 ## .profile
 This is the main file
 It includes 4 files if they exists
