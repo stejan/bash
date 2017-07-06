@@ -97,12 +97,12 @@ function gdt {
 }
 
 # remove all local branches which are not on remote anymore
-function gc {
+function gcb {
      git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv) | awk '{print $1}' | xargs git branch -D
 }
 
 # update all local branches
-function gup {
+function gub {
      local run br
      br=$(git name-rev --name-only HEAD 2>/dev/null)
      [ "$1" = "-n" ] && shift && run=echo
@@ -132,29 +132,4 @@ alias qfind="find . -name "                 # qfind:    Quickly search for file
 ff () { /usr/bin/find . -name "$@" ; }      # ff:       Find file under the current directory
 ffs () { /usr/bin/find . -name "$@"'*' ; }  # ffs:      Find file whose name starts with a given string
 ffe () { /usr/bin/find . -name '*'"$@" ; }  # ffe:      Find file whose name ends with a given string
-
-
-# Back Up a file. Usage "backup filename.txt" 
-function backup() { 
-    cp $1 ${1}_`date +%Y%m%d%H%M`.backup
-}
-
-## tar files
-function ztar {
-    tar -czvf $1 $2
-}
-
-function etar {
-    tar -cxvf $1 $2
-}
-
-## Ping
-function p {
-     if [ $1 ]; then
-          __HOST=$1
-     else
-          __HOST=google.ch
-     fi
-     ping -t $__HOST
-}
 

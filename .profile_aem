@@ -9,7 +9,7 @@ function cqi(){
              
             count=0;
             echo ""
-            ps aux -wwE | grep [c]q | while read -r line ; do
+            ps aux | grep [c]q | while read -r line ; do
              
                 ((count++));
                 params=($line);
@@ -19,17 +19,19 @@ function cqi(){
                 port="not found";
                 debugPort="not found";
                 runmodes="not found";
-                path="not found";
+                xmx="not found";
+                path=$(readlink -e /proc/$pid/cwd/);
                  
                 portRegex="-p ([0-9]+)";
                 debugPortRegex="address=([0-9]+)";
                 runmodesRegex="-Dsling.run.modes=([^[:space:]]+)";
-                pathRegex="PWD=([^[:space:]]+)";
+                xmxRegex="-Xmx([^[:space:]]+)";
                  
                 [[ $line =~ $portRegex ]] && port="${BASH_REMATCH[1]}";
-                [[ $line =~ $runmodesRegex ]] && runmodes="${BASH_REMATCH[1]}";
                 [[ $line =~ $debugPortRegex ]] && debugPort="${BASH_REMATCH[1]}";
-                [[ $line =~ $pathRegex ]] && path="${BASH_REMATCH[1]}";
+                [[ $line =~ $runmodesRegex ]] && runmodes="${BASH_REMATCH[1]}";
+                [[ $line =~ $xmxRegex ]] && xmx="${BASH_REMATCH[1]}";
+
                 echo "----------------------";
                 echo "AEM Instance" $count;
                 echo "----------------------";
@@ -38,6 +40,7 @@ function cqi(){
                 echo "port:      "$port;
                 echo "debugPort: "$debugPort;
                 echo "runmodes:  "$runmodes;
+                echo "memory:    "$xmx;
                 echo "path:      "$path;
                 echo "----------------------";
                 echo "";
@@ -51,6 +54,18 @@ function cqi(){
 }
 alias aemi=cqi
 
+function searchaem() {
+  if [[ "$PWD" == "/" && "$(which_os)" == 'Windows' ]] 
+  then
+    echo "go to a drive"
+    echo "e.g.: cd /c"
+    echo "possible drives are:"
+    wmic logicaldisk get caption
+  else 
+    find $(pwd) -type d -name "crx-quickstart"
+  fi
+}
+
 # Color CQ-Log
 function cqlog() {
     tail -fn 128 "$@" | awk '
@@ -60,6 +75,35 @@ function cqlog() {
     /DEBUG/ {print "\033[30m" $0 "\033[39m"}
     !/SEVERE|ERROR|WARN|DEBUG/ {print $0 }
 ';}
+
+function deletePauseInstallation () {
+    _auth=admin:admin
+    _host=localhost
+    _port=4502
+
+    for i in "$@"
+    do
+    case $i in
+      -a=*|--auth=*)
+      _auth="${i#*=}"
+      shift
+      ;;
+      -h=*|--host=*)
+      _host="${i#*=}"
+      shift
+      ;;
+      -p=*|--port=*)
+      _port="${i#*=}"
+      shift
+      ;;
+    esac
+    done
+
+    echo
+    echo delete pauseInstallation on server ${_host}:${_port}
+    echo
+    curl -X DELETE http://${_host}:${_port}/system/sling/installer/jcr/pauseInstallation -u ${_auth}
+}
 
 # Death to all CQ instances!
 function killcq() {
@@ -72,13 +116,37 @@ function KILLCQ() {
 }
 
 AUTHOR_PATH=/opt/aem/author
+PUBLISH_PATH=/opt/aem/publish
+DISPATCHER_LOG=/var/log/httpd/dispatcher.log
+
 alias astop='$AUTHOR_PATH/crx-quickstart/bin/stop'
 alias astart='$AUTHOR_PATH/crx-quickstart/bin/start'
 alias astatus='$AUTHOR_PATH/crx-quickstart/bin/status'
 alias alog='tail -f -n 1000 $AUTHOR_PATH/crx-quickstart/logs/error.log'
 
-PUBLISH_PATH=/opt/aem/publish1
 alias pstop='$PUBLISH_PATH/crx-quickstart/bin/stop'
 alias pstart='$PUBLISH_PATH/crx-quickstart/bin/start'
 alias pstatus='$PUBLISH_PATH/crx-quickstart/bin/status'
 alias plog='tail -f -n 1000 $PUBLISH_PATH/crx-quickstart/logs/error.log'
+
+alias displog='sudo tail -f -n 1000 $DISPATCHER_LOG'
+
+
+# tail all log files to the virtual box shared folder
+function mountLog(){
+	# Virtual Box shared folder path on guest system
+	sharename="share"
+	VB_SHARED_FOLDER="/mnt/$sharename"
+	sudo mkdir $VB_SHARED_FOLDER
+	sudo chmod 777 $VB_SHARED_FOLDER
+	sudo mount -t vboxsf -o uid=1000,gid=1000 $sharename $VB_SHARED_FOLDER
+
+    files=( "access.log" "error.log" "request.log" )
+    for i in "${files[@]}"
+    do
+      sudo tail -f -n 1000 "$AUTHOR_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/author/$i" &
+      sudo tail -f -n 1000 "$PUBLISH_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/publish/$i" &
+    done
+
+    sudo tail -f -n 1000 "$DISPATCHER_LOG" > "$VB_SHARED_FOLDER/dispatcher.log" &
+}
