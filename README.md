@@ -10,7 +10,7 @@ test -f ~/.profile && . ~/.profile
 ```
 
 ## .profile
-This is the main file
+This is the main file.  
 It includes 4 files if they exists
 
 - .profile_utils
@@ -18,13 +18,13 @@ It includes 4 files if they exists
 - .profile_projects
 - .profile_keys 
 
-It also defines a lot of alias for better navigation, for maven and git 
-commands
+It also defines a lot of alias for better navigation, for maven and git commands
 
 ## .profile_utils
-This file includes color definition and some function like extract tgz files, 
-make a backup from a file and so on.
-
+This file includes color definition and some function like 
+- extract tgz files
+- make a backup from a file
+- ...
 
 ## .profile_aem
 This file includes aem specific funtions like 
