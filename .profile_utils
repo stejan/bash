@@ -13,51 +13,37 @@
 #
 
 #
-# Set Colors
-#
-
-bold=$(tput bold)
-underline=$(tput sgr 0 1)
-reset=$(tput sgr0)
-
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-
-#
 # Headers and  Logging
 #
 
-e_header() { printf "\n${bold}${purple}==========  %s  ==========${reset}\n" "$@"
+e_header() { printf "\\n${bold}${purple}==========  %s  ==========${reset}\\n" "$@"
 }
-e_arrow() { printf "➜ $@\n"
+e_arrow() { printf "-> %s\\n" "$@" 
 }
-e_success() { printf "${green}✔ %s${reset}\n" "$@"
+e_success() { printf "${green}✔ %s${reset}\\n" "$@"
 }
-e_error() { printf "${red}✖ %s${reset}\n" "$@"
+e_error() { printf "${red}✖ %s${reset}\\n" "$@" 
 }
-e_warning() { printf "${tan}➜ %s${reset}\n" "$@"
+e_warning() { printf "${tan}➜ %s${reset}\\n" "$@" 
 }
-e_underline() { printf "${underline}${bold}%s${reset}\n" "$@"
+e_underline() { printf "${underline}${bold}%s${reset}\\n" "$@" 
 }
-e_bold() { printf "${bold}%s${reset}\n" "$@"
+e_bold() { printf "${bold}%s${reset}\\n" "$@" 
 }
-e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\n" "$@"
+e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\\n" "$@" 
 }
 
 seek_confirmation() {
-  printf "\n${bold}$@${reset}"
+  printf "\\n${bold}%s${reset}" "$@"
   read -p " (y/n) " -n 1
-  printf "\n"
+  printf "\\n"
 }
 
 # underlined
 seek_confirmation_head() {
-  printf "\n${underline}${bold}$@${reset}"
+  printf "\\n${underline}${bold}%s${reset}" "$@"
   read -p "${underline}${bold} (y/n)${reset} " -n 1
-  printf "\n"
+  printf "\\n"
 }
 
 # Test whether the result of an 'ask' is a confirmation
@@ -67,7 +53,6 @@ if [[ "$REPLY" =~ ^[Yy]$ ]]; then
 fi
 return 1
 }
-
 #
 # Test whether a command exists
 # $1 = cmd to test
@@ -80,10 +65,10 @@ return 1
 #
 
 type_exists() {
-if [ $(type -P $1) ]; then
-  return 0
-fi
-return 1
+  if [ $(type -P $1) ]; then
+    return 0
+  fi
+  return 1
 }
 
 #
@@ -93,10 +78,10 @@ return 1
 #
 
 is_os() {
-if [[ "$(which_os)" == $1* ]]; then
-  return 0
-fi
-return 1
+  if [[ "$(which_os)" == $1* ]]; then
+    return 0
+  fi
+    return 1
 }
 
 which_os() {
@@ -113,10 +98,11 @@ which_os() {
    # Add here more strings to compare
    # See correspondence table at the bottom of this answer
    *)
-     echo 'other' 
+     echo 'other'
      ;;
   esac
 }
+
 #
 # Pushover Notifications
 # Usage: pushover "Title Goes Here" "Message Goes Here"
@@ -156,14 +142,14 @@ function to_install() {
     read -ra installed < <(echo "$2" | tr '\n' ' ')
     # Sort desired and installed arrays.
     unset i; while read -r; do desired_s[i++]=$REPLY; done < <(
-      printf "%s\n" "${desired[@]}" | sort
+      printf "%s\\n" "${desired[@]}" | sort
     )
     unset i; while read -r; do installed_s[i++]=$REPLY; done < <(
-      printf "%s\n" "${installed[@]}" | sort
+      printf "%s\\n" "${installed[@]}" | sort
     )
     # Get the difference. comm is awesome.
     unset i; while read -r; do remain[i++]=$REPLY; done < <(
-      comm -13 <(printf "%s\n" "${installed_s[@]}") <(printf "%s\n" "${desired_s[@]}")
+      comm -13 <(printf "%s\\n" "${installed_s[@]}") <(printf "%s\\n" "${desired_s[@]}")
   )
   [[ "$debug" ]] && for v in desired desired_s installed installed_s remain; do
     echo "$v ($(eval echo "\${#$v[*]}")) $(eval echo "\${$v[*]}")"
@@ -230,6 +216,13 @@ NC="\e[m"               # Color Reset
 
 ALERT=${BWhite}${On_Red} # Bold White on red background
 
+function info() {
+    e_header "JAVA VERSION"
+    printf "%s" "$($JAVA_HOME/bin/java -version)"
+
+    e_header "MAVEN VERSION"
+    printf "%s" "$(mvn -version)\\n"
+}
 
 #-------------------------------------------------------------
 # File & strings related functions:
@@ -344,4 +337,3 @@ function corename()   # Get name of app that created a corefile.
         echo -n $file : ; gdb --core=$file --batch | head -1
     done
 }
-
