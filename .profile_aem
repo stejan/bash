@@ -100,7 +100,7 @@ function deletePauseInstallation () {
     done
 
     echo
-    echo delete pauseInstallation on server ${_host}:${_port}
+    echo "delete pauseInstallation on server ${_host}:${_port}"
     echo
     curl -X DELETE http://${_host}:${_port}/system/sling/installer/jcr/pauseInstallation -u ${_auth}
 }
@@ -131,21 +131,20 @@ alias plog='tail -f -n 1000 $PUBLISH_PATH/crx-quickstart/logs/error.log'
 
 alias displog='sudo tail -f -n 1000 $DISPATCHER_LOG'
 
-
 # tail all log files to the virtual box shared folder
 function mountLog(){
-	# Virtual Box shared folder path on guest system
-	sharename="share"
-	VB_SHARED_FOLDER="/mnt/$sharename"
-	sudo mkdir $VB_SHARED_FOLDER
-	sudo chmod 777 $VB_SHARED_FOLDER
-	sudo mount -t vboxsf -o uid=1000,gid=1000 $sharename $VB_SHARED_FOLDER
+    # Virtual Box shared folder path on guest system
+    sharename="share"
+    VB_SHARED_FOLDER="/mnt/$sharename"
+    sudo mkdir $VB_SHARED_FOLDER
+    sudo chmod 777 $VB_SHARED_FOLDER
+    sudo mount -t vboxsf -o uid=1000,gid=1000 $sharename $VB_SHARED_FOLDER
 
     files=( "access.log" "error.log" "request.log" )
     for i in "${files[@]}"
     do
-      sudo tail -f -n 1000 "$AUTHOR_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/author/$i" &
-      sudo tail -f -n 1000 "$PUBLISH_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/publish/$i" &
+        sudo tail -f -n 1000 "$AUTHOR_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/author/$i" &
+        sudo tail -f -n 1000 "$PUBLISH_PATH/crx-quickstart/logs/$i" > "$VB_SHARED_FOLDER/publish/$i" &
     done
 
     sudo tail -f -n 1000 "$DISPATCHER_LOG" > "$VB_SHARED_FOLDER/dispatcher.log" &
