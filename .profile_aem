@@ -2,7 +2,7 @@
 
 ### AEM
 # Displays an overview of all running AEM instances
-function cqi(){
+function aemi(){
      
     if [ "$(ps aux | grep [c]q)" ]
         then
@@ -52,7 +52,6 @@ function cqi(){
             echo "";
         fi
 }
-alias aemi=cqi
 
 function searchaem() {
   if [[ "$PWD" == "/" && "$(which_os)" == 'Windows' ]] 
